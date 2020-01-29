@@ -18,9 +18,9 @@ if [ $(id -u) -ne 0 ]; then
 	exec sudo -u root -- "$0" "$@"
 fi
 
-DEPLOY_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
-PKGS_DIR="$DEPLOY_HOME/packages"
-PROGNAME='apk-deploy-pkg'
+readonly DEPLOY_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+readonly PKGS_DIR="$DEPLOY_HOME/packages"
+readonly PROGNAME='apk-deploy-pkg'
 
 log() {
 	local level=$1

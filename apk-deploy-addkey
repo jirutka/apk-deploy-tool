@@ -17,12 +17,12 @@
 #---help---
 set -eu -o pipefail
 
-PROGNAME='apk-deploy-addkey'
-APK_KEYS_DIR='/etc/apk/keys'
-DEPLOY_USER='deploy'
-DEPLOY_GROUP=$(id -gn "$DEPLOY_USER")
-DEPLOY_HOME=$(getent passwd "$DEPLOY_USER" | cut -d: -f6)
-AUTHORIZED_KEYS="$DEPLOY_HOME/.ssh/authorized_keys"
+readonly PROGNAME='apk-deploy-addkey'
+readonly APK_KEYS_DIR='/etc/apk/keys'
+readonly DEPLOY_USER='deploy'
+readonly DEPLOY_GROUP=$(id -gn "$DEPLOY_USER")
+readonly DEPLOY_HOME=$(getent passwd "$DEPLOY_USER" | cut -d: -f6)
+readonly AUTHORIZED_KEYS="$DEPLOY_HOME/.ssh/authorized_keys"
 
 
 die() {
