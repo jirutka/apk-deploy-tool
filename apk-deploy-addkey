@@ -13,7 +13,7 @@
 #   -A --no-apk-key    Don't prompt for APK key.
 #   -h --help          Show this message and exit.
 #
-# Homepage: <https://github.com/jirutka/user-aports>
+# Homepage: <https://github.com/jirutka/apk-deploy-tool>
 #---help---
 set -eu -o pipefail
 
