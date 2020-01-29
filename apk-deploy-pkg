@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/sh
 # vim: set ts=4 ft=sh:
 #---help---
 # Usage: apk-deploy-pkg [options]
