@@ -18,7 +18,7 @@
 set -eu -o pipefail
 
 readonly PROGNAME='apk-deploy-addkey'
-readonly VERSION='0.2.2'
+readonly VERSION='0.2.3'
 
 readonly APK_KEYS_DIR='/etc/apk/keys'
 readonly DEPLOY_USER='deploy'
