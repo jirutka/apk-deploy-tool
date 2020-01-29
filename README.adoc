@@ -1,0 +1,43 @@
+= APK Deploy Tool
+:name: apk-deploy-tool
+:gh-name: jirutka/{name}
+:version: 0.0.0
+
+TODO
+
+
+== Requirements
+
+TODO
+
+
+== Installation
+
+NOTE: The project’s link:Makefile[] supports standard GNU variables such as `DESTDIR`, `prefix`, `bindir`…
+
+
+=== From git
+
+[source, sh, subs="verbatim, attributes"]
+----
+git clone -b v{version} https://github.com/{gh-name}.git
+cd {name}
+make install
+----
+
+
+=== From Tarball
+
+[source, sh, subs="verbatim, attributes"]
+----
+wget https://github.com/{gh-name}/archive/v{version}/{name}-{version}.tar.gz
+tar -xzf {name}-{version}.tar.gz
+cd {name}-{version}
+make install
+----
+
+
+== License
+
+This project is licensed under http://opensource.org/licenses/MIT/[MIT License].
+For the full text of the license, see the link:LICENSE[LICENSE] file.
