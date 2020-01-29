@@ -18,9 +18,12 @@ if [ $(id -u) -ne 0 ]; then
 	exec sudo -u root -- "$0" "$@"
 fi
 
+readonly PROGNAME='apk-deploy-pkg'
+readonly VERSION='0.2.2'
+
 readonly DEPLOY_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
 readonly PKGS_DIR="$DEPLOY_HOME/packages"
-readonly PROGNAME='apk-deploy-pkg'
+
 
 log() {
 	local level=$1
@@ -69,6 +72,7 @@ check_configs() {
 overwrite=no
 case "${1:-}" in
 	-f | --overwrite-configs) overwrite=yes;;
+	-V | --version) echo "$PROGNAME $VERSION"; exit 0;;
 	-h | --help) help; exit 0;;
 esac
 

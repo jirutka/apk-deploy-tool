@@ -18,6 +18,8 @@
 set -eu -o pipefail
 
 readonly PROGNAME='apk-deploy-addkey'
+readonly VERSION='0.2.2'
+
 readonly APK_KEYS_DIR='/etc/apk/keys'
 readonly DEPLOY_USER='deploy'
 readonly DEPLOY_GROUP=$(id -gn "$DEPLOY_USER")
@@ -79,7 +81,7 @@ ssh_pubkey_to_pkcs8() {
 apk_pubkey_name=''
 apk_pubkey_skip=no
 
-opts=$(getopt -n $PROGNAME -o An:h -l no-apk-key,apk-key-name:,help -- "$@") || exit 1
+opts=$(getopt -n $PROGNAME -o An:h -l no-apk-key,apk-key-name:,version,help -- "$@") || exit 1
 eval set -- "$opts"
 
 while [ $# -gt 0 ]; do
@@ -87,6 +89,7 @@ while [ $# -gt 0 ]; do
 	case "$1" in
 		-n | --apk-key-name) apk_pubkey_name="$2";;
 		-A | --no-apk-key) apk_pubkey_skip=yes; n=1;;
+		-V | --version) echo "$PROGNAME $VERSION"; exit 0;;
 		-h | --help) help; exit 0;;
 		--) shift; break;;
 	esac
