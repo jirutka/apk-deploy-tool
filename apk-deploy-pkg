@@ -70,12 +70,21 @@ check_configs() {
 	done
 }
 
+
+opts=$(getopt -n $PROGNAME -o fVh -l overwrite-configs,version,help -- "$@") || exit 1
+eval set -- "$opts"
+
 overwrite=no
-case "${1:-}" in
-	-f | --overwrite-configs) overwrite=yes;;
-	-V | --version) echo "$PROGNAME $VERSION"; exit 0;;
-	-h | --help) help; exit 0;;
-esac
+while [ $# -gt 0 ]; do
+	n=2
+	case "$1" in
+		-f | --overwrite-configs) overwrite=yes; n=1;;
+		-V | --version) echo "$PROGNAME $VERSION"; exit 0;;
+		-h | --help) help; exit 0;;
+		--) shift; break;;
+	esac
+	shift $n
+done
 
 tmpdir=$(mktemp -d)
 pkgfile="$tmpdir/pkg.apk"
