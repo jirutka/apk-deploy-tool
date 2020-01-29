@@ -11,6 +11,7 @@
 # Options:
 #   -n --apk-key-name  Name of the APK key.
 #   -A --no-apk-key    Don't prompt for APK key.
+#   -V --version       Print the program version and exit.
 #   -h --help          Show this message and exit.
 #
 # Environment:

@@ -8,6 +8,7 @@
 # Options:
 #   -f --overwrite-configs  Overwrite any local changes in /etc files
 #                           provided by the installed package.
+#   -V --version            Print the program version and exit.
 #   -h --help               Show this message and exit.
 #
 # Homepage: <https://github.com/jirutka/apk-deploy-tool>
