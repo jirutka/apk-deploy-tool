@@ -13,6 +13,9 @@
 #   -A --no-apk-key    Don't prompt for APK key.
 #   -h --help          Show this message and exit.
 #
+# Environment:
+#   APK_DEPLOY_USER    The user to authorize the SSH key for.
+#
 # Homepage: <https://github.com/jirutka/apk-deploy-tool>
 #---help---
 set -eu -o pipefail
@@ -21,7 +24,7 @@ readonly PROGNAME='apk-deploy-addkey'
 readonly VERSION='0.2.3'
 
 readonly APK_KEYS_DIR='/etc/apk/keys'
-readonly DEPLOY_USER='deploy'
+readonly DEPLOY_USER=${APK_DEPLOY_USER:-"deploy"}
 readonly DEPLOY_GROUP=$(id -gn "$DEPLOY_USER")
 readonly DEPLOY_HOME=$(getent passwd "$DEPLOY_USER" | cut -d: -f6)
 readonly AUTHORIZED_KEYS="$DEPLOY_HOME/.ssh/authorized_keys"
