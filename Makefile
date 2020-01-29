@@ -1,7 +1,9 @@
-SCRIPTS        = apk-deploy
+SCRIPTS_BIN    = apk-deploy-pkg
+SCRIPTS_SBIN   = apk-deploy-addkey
 
 prefix        := /usr/local
 bindir        := $(prefix)/bin
+sbindir       := $(prefix)/sbin
 
 INSTALL       := install
 GIT           := git
@@ -18,18 +20,26 @@ help:
 
 #: Install the scripts.
 install:
-	for script in $(SCRIPTS); do \
+	for script in $(SCRIPTS_BIN); do \
 		$(INSTALL) -m 755 -D $$script "$(DESTDIR)$(bindir)/$$script"; \
+	done
+	for script in $(SCRIPTS_SBIN); do \
+		$(INSTALL) -m 755 -D $$script "$(DESTDIR)$(sbindir)/$$script"; \
 	done
 
 #: Uninstall the scripts.
 uninstall:
-	rm -f $(addprefix "$(DESTDIR)$(bindir)"/,$(SCRIPTS))
+	for script in $(SCRIPTS_BIN); do \
+		rm -f "$(DESTDIR)$(bindir)/$$script"; \
+	done
+	for script in $(SCRIPTS_SBIN); do \
+		rm -f "$(DESTDIR)$(sbindir)/$$script"; \
+	done
 
 #: Update version in the script and README.adoc to $VERSION.
 bump-version:
 	test -n "$(VERSION)"  # $$VERSION
-	$(SED) -E -i "s/^(readonly VERSION)=.*/\1='$(VERSION)'/" $(SCRIPTS)
+	$(SED) -E -i "s/^(readonly VERSION)=.*/\1='$(VERSION)'/" $(SCRIPTS_BIN) $(SCRIPTS_SBIN)
 	$(SED) -E -i "s/^(:version:).*/\1 $(VERSION)/" README.adoc
 
 #: Bump version to $VERSION, create release commit and tag.
