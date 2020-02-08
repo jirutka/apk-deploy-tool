@@ -3,8 +3,8 @@
 #---help---
 # Usage: apk-deploy-pkg [options]
 #
-# Read APK package from STDIN, install it and optionally restart
-# the specified services.
+# Read APK package from STDIN, install it and optionally restart the specified
+# services. If anything fails, perform a rollback to the previous version.
 #
 # Options:
 #   -f --overwrite-configs
