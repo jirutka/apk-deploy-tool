@@ -27,6 +27,7 @@
 # Homepage: <https://github.com/jirutka/apk-deploy-tool>
 #---help---
 set -eu -o pipefail
+set -f  # disable globbing
 
 if [ $(id -u) -ne 0 ]; then
 	exec sudo -u root -- "$0" "$@"
@@ -65,7 +66,6 @@ expand_restart_list() {
 	local pkgname=$2
 	local cmd item svcname svcnames
 
-	set -f  # disable globbing
 	for item in $(echo "$restart_list" | tr ',' ' '); do
 		svcname=${item%%:*}
 		cmd='restart'
@@ -81,7 +81,6 @@ expand_restart_list() {
 			echo "$svcname:$cmd"
 		done
 	done
-	set +f  # enable globbing
 }
 
 pkginfo_get() {
