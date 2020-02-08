@@ -3,13 +3,26 @@
 #---help---
 # Usage: apk-deploy-pkg [options]
 #
-# Read APK package from STDIN, install it and restart its service, if any.
+# Read APK package from STDIN, install it and optionally restart
+# the specified services.
 #
 # Options:
-#   -f --overwrite-configs  Overwrite any local changes in /etc files
-#                           provided by the installed package.
-#   -V --version            Print the program version and exit.
-#   -h --help               Show this message and exit.
+#   -f --overwrite-configs
+#       Overwrite any local changes in /etc files provided by
+#       the installed package.
+#
+#   -r --restart <svcname>[:<cmd>][,...]
+#       A comma-separated list of services to restart after installing the
+#       package. The service name may be a glob, or "@own" that will be expanded
+#       to all the services installed by this package. Each service name may be
+#       followed with a colon and the init script's command to execute (default
+#       is "restart").
+#
+#   -V --version
+#       Print the program version and exit.
+#
+#   -h --help
+#       Show this message and exit.
 #
 # Homepage: <https://github.com/jirutka/apk-deploy-tool>
 #---help---
@@ -47,14 +60,38 @@ help() {
 	sed -n '/^#---help---/,/^#---help---/p' "$0" | sed 's/^# \?//; 1d;$d;'
 }
 
+expand_restart_list() {
+	local restart_list=$1
+	local pkgname=$2
+	local cmd item svcname svcnames
+
+	set -f  # disable globbing
+	for item in $(echo "$restart_list" | tr ',' ' '); do
+		svcname=${item%%:*}
+		cmd='restart'
+		[ "$item" = "$svcname" ] || cmd=${item#*:}
+
+		case "$svcname" in
+			'@own') svcnames=$(pkg_svcnames "$pkgname");;
+			*) svcnames=$(find /etc/init.d -name "$svcname" -exec basename {} \;);;
+		esac
+		[ "$svcnames" ] || die 2 "No service matching \"$svcname\" found!"
+
+		for svcname in $svcnames; do
+			echo "$svcname:$cmd"
+		done
+	done
+	set +f  # enable globbing
+}
+
 pkginfo_get() {
 	local field=$1 apkfile=$2
 	tar -Oxzf "$apkfile" .PKGINFO | sed -En "s/^$field = (.*)/\1/p"
 }
 
-pkg_svcname() {
+pkg_svcnames() {
 	local pkgname=$1
-	apk info -Lq "$pkgname" | grep -m 1 '^etc/init\.d/' | grep -o '[^/]\+$'
+	apk info -Lq "$pkgname" | grep '^etc/init\.d/' | grep -o '[^/]\+$'
 }
 
 check_configs() {
@@ -70,21 +107,34 @@ check_configs() {
 	done
 }
 
+rc_service() {
+	local svcname=${1%%:*}
+	local cmd=${1#*:}
 
-opts=$(getopt -n $PROGNAME -o fVh -l overwrite-configs,version,help -- "$@") || exit 1
+	rc-service "$svcname" "$cmd"
+}
+
+
+opts=$(getopt -n $PROGNAME -o fVh -l overwrite-configs,restart:,version,help -- "$@") || exit 1
 eval set -- "$opts"
 
 overwrite=no
+restart_svcs=
 while [ $# -gt 0 ]; do
 	n=2
 	case "$1" in
 		-f | --overwrite-configs) overwrite=yes; n=1;;
+		-r | --restart) restart_svcs="$restart_svcs$2,";;
 		-V | --version) echo "$PROGNAME $VERSION"; exit 0;;
 		-h | --help) help; exit 0;;
 		--) shift; break;;
 	esac
 	shift $n
 done
+
+if [ "$restart_svcs" ] && ! expr "$restart_svcs" : '[][a-zA-Z0-9.:,_*@?-]*$' >/dev/null; then
+	die 2 'Option --restart contains forbidden character(s)!'
+fi
 
 tmpdir=$(mktemp -d)
 pkgfile="$tmpdir/pkg.apk"
@@ -112,15 +162,33 @@ apk add --no-progress "$pkgfile" || {
 
 check_configs "$pkgname" "$overwrite"
 
-if svcname=$(pkg_svcname "$pkgname"); then
-	rc-service $svcname restart || {
-		[ "$pkgfile_old" ] || die 3 'Installation failed and no previous version for rollback exists!'
+if [ "$restart_svcs" ]; then
+	log info 'Restarting services...'
 
-		log error "Service $svcname failed, rolling back to the previous version..."
-		apk add --no-progress "$pkgfile_old" || die 3 'Rollback failed'
-		rc-service $svcname restart || die 3 'Rollback failed'
-		exit 4
-	}
+	restart_svcs=$(expand_restart_list "$restart_svcs" "$pkgname")
+	restarted_svcs=''
+
+	for svc in $restart_svcs; do
+		restarted_svcs="$restarted_svcs $svc"
+
+		rc_service "$svc" || {
+			svcname=${svc%%:*}
+
+			[ "$pkgfile_old" ] \
+				|| die 3 "Service $svcname failed and no previous version for rollback exists!"
+
+			log error "Service $svcname failed, rolling back to the previous version..."
+			apk add --no-progress "$pkgfile_old" || die 3 'Rollback failed'
+
+			failed=no
+			for svc in $restarted_svcs; do
+				rc_service "$svc" || failed=yes
+			done
+			[ "$failed" = no ] || die 3 'Rollback failed'
+
+			exit 4
+		}
+	done
 fi
 
 # Delete old versions of the package.
