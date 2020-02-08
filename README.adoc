@@ -1,7 +1,7 @@
 = APK Deploy Tool
 :name: apk-deploy-tool
 :gh-name: jirutka/{name}
-:version: 0.2.3
+:version: 0.3.0
 
 TODO
 
