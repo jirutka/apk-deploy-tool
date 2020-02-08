@@ -150,6 +150,9 @@ pkgfile="$PKGS_DIR/$pkgname~$(date +%s).apk"
 
 mv "$tmpdir/pkg.apk" "$pkgfile"
 
+log info "Checking $pkgname-$pkgver dependencies..."
+apk add --simulate --quiet "$pkgfile" || die 4 'Dry-run installation failed!'
+
 log info "Installing $pkgname-$pkgver..."
 apk add --no-progress "$pkgfile" || {
 	[ "$pkgfile_old" ] || die 3 'Installation failed and no previous version for rollback exists!'
