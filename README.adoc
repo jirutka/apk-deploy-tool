@@ -9,7 +9,7 @@ TODO
 == Requirements
 
 * http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html[POSIX-sh] compatible shell with `pipefail` support (e.g. Busybox ash, ZSH, bash, …)
-* cut, grep, sed, tar (both GNU and Busybox are supported)
+* common Busybox or GNU tools (grep, sed, tar, …)
 * https://github.com/alpinelinux/apk-tools[apk-tools]
 * ssh-keygen from OpenSSH
 * sudo
