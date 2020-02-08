@@ -24,6 +24,16 @@
 #   -h --help
 #       Show this message and exit.
 #
+# Exit Codes:
+#   1   Generic error code.
+#   2   Invalid usage.
+#   3   Pre-installation check failed.
+#   4   Service to be restarted doesn't exist.
+#   10  Installation failed and rollback failed too.
+#   11  Service restart failed and rollback failed too.
+#   20  Installation failed, but rollback was successfull.
+#   21  Service restart failed, but rollback was successfull.
+#
 # Homepage: <https://github.com/jirutka/apk-deploy-tool>
 #---help---
 set -eu -o pipefail
@@ -75,7 +85,7 @@ expand_restart_list() {
 			'@own') svcnames=$(pkg_svcnames "$pkgname");;
 			*) svcnames=$(find /etc/init.d -name "$svcname" -exec basename {} \;);;
 		esac
-		[ "$svcnames" ] || die 2 "No service matching \"$svcname\" found!"
+		[ "$svcnames" ] || die 4 "No service matching \"$svcname\" found!"
 
 		for svcname in $svcnames; do
 			echo "$svcname:$cmd"
@@ -114,7 +124,7 @@ rc_service() {
 }
 
 
-opts=$(getopt -n $PROGNAME -o fVh -l overwrite-configs,restart:,version,help -- "$@") || exit 1
+opts=$(getopt -n $PROGNAME -o fVh -l overwrite-configs,restart:,version,help -- "$@") || exit 2
 eval set -- "$opts"
 
 overwrite=no
@@ -151,15 +161,15 @@ pkgfile="$PKGS_DIR/$pkgname~$(date +%s).apk"
 mv "$tmpdir/pkg.apk" "$pkgfile"
 
 log info "Checking $pkgname-$pkgver dependencies..."
-apk add --simulate --quiet "$pkgfile" || die 4 'Dry-run installation failed!'
+apk add --simulate --quiet "$pkgfile" || die 3 'Dry-run installation failed!'
 
 log info "Installing $pkgname-$pkgver..."
 apk add --no-progress "$pkgfile" || {
-	[ "$pkgfile_old" ] || die 3 'Installation failed and no previous version for rollback exists!'
+	[ "$pkgfile_old" ] || die 10 'Installation failed and no previous version for rollback exists!'
 
 	log error 'Installation failed, rolling back to the previous version...'
-	apk add --no-progress "$pkgfile_old" || die 3 'Rollback failed'
-	exit 4
+	apk add --no-progress "$pkgfile_old" || die 10 'Rollback failed'
+	exit 20
 }
 
 check_configs "$pkgname" "$overwrite"
@@ -177,18 +187,18 @@ if [ "$restart_svcs" ]; then
 			svcname=${svc%%:*}
 
 			[ "$pkgfile_old" ] \
-				|| die 3 "Service $svcname failed and no previous version for rollback exists!"
+				|| die 11 "Service $svcname failed and no previous version for rollback exists!"
 
 			log error "Service $svcname failed, rolling back to the previous version..."
-			apk add --no-progress "$pkgfile_old" || die 3 'Rollback failed'
+			apk add --no-progress "$pkgfile_old" || die 11 'Rollback failed'
 
 			failed=no
 			for svc in $restarted_svcs; do
 				rc_service "$svc" || failed=yes
 			done
-			[ "$failed" = no ] || die 3 'Rollback failed'
+			[ "$failed" = no ] || die 11 'Rollback failed'
 
-			exit 4
+			exit 21
 		}
 	done
 fi
