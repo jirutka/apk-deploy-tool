@@ -13,10 +13,10 @@
 #
 #   -r --restart <svcname>[:<cmd>][,...]
 #       A comma-separated list of services to restart after installing the
-#       package. The service name may be a glob, or "@own" that will be expanded
-#       to all the services installed by this package. Each service name may be
-#       followed with a colon and the init script's command to execute (default
-#       is "restart").
+#       package. The service name may be a glob matching services in runlevels
+#       default and boot, or "@own" which will select all services installed by
+#       this package. Each service name may be followed with a colon and the
+#       init script's command to execute (default is "restart").
 #
 #   -V --version
 #       Print the program version and exit.
@@ -82,10 +82,19 @@ expand_restart_list() {
 		[ "$item" = "$svcname" ] || cmd=${item#*:}
 
 		case "$svcname" in
-			'@own') svcnames=$(pkg_svcnames "$pkgname");;
-			*) svcnames=$(find /etc/init.d -name "$svcname" -exec basename {} \;);;
+			'@own')
+				svcnames=$(pkg_svcnames "$pkgname") \
+					|| die 4 "This package doesn't provide any services!"
+			;;
+			*'*'* | *'['* | *'?'*)
+				svcnames=$(find_enabled_services "$svcname") \
+					|| die 4 "No service matching \"$svcname\" found in default or boot runlevel!"
+			;;
+			*)
+				svcnames=$(rc-service --list | grep -Fx "$svcname") \
+					|| die 4 "Service \"$svcname\" doesn't exist!"
+			;;
 		esac
-		[ "$svcnames" ] || die 4 "No service matching \"$svcname\" found!"
 
 		for svcname in $svcnames; do
 			echo "$svcname:$cmd"
@@ -114,6 +123,13 @@ check_configs() {
 		diff -u "$path" "$path.apk-new" || true
 		[ "$overwrite" = no ] || mv "$path.apk-new" "$path"
 	done
+}
+
+find_enabled_services() {
+	local svcname=$1
+
+	find /etc/runlevels/boot /etc/runlevels/default \
+		-name "$svcname" -type l -exec basename {} \; | grep .
 }
 
 rc_service() {
