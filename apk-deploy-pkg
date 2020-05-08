@@ -140,7 +140,7 @@ rc_service() {
 
 	# If the <cmd> cannot be executed, e.g. it's "reload" and the service
 	# is not running...
-	if ! rc-service --dry-run --quiet "$svcname" >/dev/null; then
+	if ! rc-service --dry-run --quiet "$svcname" "$cmd" >/dev/null; then
 		rc-service "$svcname" restart
 
 		case "$cmd" in
