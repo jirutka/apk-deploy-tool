@@ -16,7 +16,9 @@
 #       package. The service name may be a glob matching services in runlevels
 #       default and boot, or "@own" which will select all services installed by
 #       this package. Each service name may be followed with a colon and the
-#       init script's command to execute (default is "restart").
+#       init script's command to execute (default is "restart"). If the command
+#       cannot be executed (e.g. service is not running), service is restarted
+#       first, then the command is executed unless it's "restart" or "reload".
 #
 #   -V --version
 #       Print the program version and exit.
@@ -135,6 +137,17 @@ find_enabled_services() {
 rc_service() {
 	local svcname=${1%%:*}
 	local cmd=${1#*:}
+
+	# If the <cmd> cannot be executed, e.g. it's "reload" and the service
+	# is not running...
+	if ! rc-service --dry-run --quiet "$svcname" >/dev/null; then
+		rc-service "$svcname" restart
+
+		case "$cmd" in
+			# Don't restart it again, nor reload...
+			restart | reload) return;;
+		esac
+	fi
 
 	rc-service "$svcname" "$cmd"
 }
