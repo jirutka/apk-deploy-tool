@@ -12,7 +12,7 @@ TODO
 * common Busybox or GNU tools (grep, sed, tar, …)
 * https://github.com/alpinelinux/apk-tools[apk-tools]
 * ssh-keygen from OpenSSH
-* sudo
+* `doas` or `sudo`
 * https://github.com/OpenRC/openrc[OpenRC] init system (for restarting services)
 
 

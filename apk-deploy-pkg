@@ -42,7 +42,11 @@ set -eu -o pipefail
 set -f  # disable globbing
 
 if [ $(id -u) -ne 0 ]; then
-	exec sudo -u root -- "$0" "$@"
+	if command -v doas >/dev/null; then
+		exec doas -u root -- "$0" "$@"
+	else
+		exec sudo -u root -- "$0" "$@"
+	fi
 fi
 
 readonly PROGNAME='apk-deploy-pkg'

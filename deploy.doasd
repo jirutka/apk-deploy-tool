@@ -1,0 +1,1 @@
+permit nopass deploy as root cmd /usr/local/bin/apk-deploy-pkg
