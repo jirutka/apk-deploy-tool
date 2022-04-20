@@ -50,7 +50,7 @@ if [ $(id -u) -ne 0 ]; then
 fi
 
 readonly PROGNAME='apk-deploy-pkg'
-readonly VERSION='0.5.0'
+readonly VERSION='0.5.1'
 
 readonly DEPLOY_HOME=$(getent passwd "${DOAS_USER:-$SUDO_USER}" | cut -d: -f6)
 readonly PKGS_DIR="${DEPLOY_HOME:?}/packages"
