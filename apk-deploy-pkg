@@ -52,8 +52,8 @@ fi
 readonly PROGNAME='apk-deploy-pkg'
 readonly VERSION='0.5.0'
 
-readonly DEPLOY_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
-readonly PKGS_DIR="$DEPLOY_HOME/packages"
+readonly DEPLOY_HOME=$(getent passwd "${DOAS_USER:-$SUDO_USER}" | cut -d: -f6)
+readonly PKGS_DIR="${DEPLOY_HOME:?}/packages"
 
 
 log() {
