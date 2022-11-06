@@ -64,8 +64,8 @@ check_ssh_pubkey() {
 }
 
 authorized_key_line() {
-	local name=$1
-	local pubkey=$(echo "$2" | cut -d' ' -f1-2)
+	local name="$1"
+	local pubkey="$(echo "$2" | cut -d' ' -f1-2)"
 
 	printf 'no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty %s %s\n' "$pubkey" "$name"
 }

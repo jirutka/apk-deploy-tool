@@ -57,8 +57,8 @@ readonly PKGS_DIR="${DEPLOY_HOME:?}/packages"
 
 
 log() {
-	local level=$1
-	local msg=$2
+	local level="$1"
+	local msg="$2"
 	local prefix=''
 
 	case "$level" in
@@ -78,8 +78,8 @@ help() {
 }
 
 expand_restart_list() {
-	local restart_list=$1
-	local pkgname=$2
+	local restart_list="$1"
+	local pkgname="$2"
 	local cmd item svcname svcnames
 
 	for item in $(echo "$restart_list" | tr ',' ' '); do
@@ -109,17 +109,17 @@ expand_restart_list() {
 }
 
 pkginfo_get() {
-	local field=$1 apkfile=$2
+	local field="$1" apkfile="$2"
 	tar -Oxzf "$apkfile" .PKGINFO | sed -En "s/^$field = (.*)/\1/p"
 }
 
 pkg_svcnames() {
-	local pkgname=$1
+	local pkgname="$1"
 	apk info -Lq "$pkgname" | grep '^etc/init\.d/' | grep -o '[^/]\+$'
 }
 
 check_configs() {
-	local pkgname=$1
+	local pkgname="$1"
 	local overwrite="$2"
 
 	apk info -Lq "$pkgname" | grep '^etc/' | while read path; do
@@ -132,15 +132,15 @@ check_configs() {
 }
 
 find_enabled_services() {
-	local svcname=$1
+	local svcname="$1"
 
 	find /etc/runlevels/boot /etc/runlevels/default \
 		-name "$svcname" -type l -exec basename {} \; | grep .
 }
 
 rc_service() {
-	local svcname=${1%%:*}
-	local cmd=${1#*:}
+	local svcname="${1%%:*}"
+	local cmd="${1#*:}"
 
 	# If the <cmd> cannot be executed, e.g. it's "reload" and the service
 	# is not running...
