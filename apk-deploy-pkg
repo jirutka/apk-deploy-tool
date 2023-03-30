@@ -138,14 +138,25 @@ find_enabled_services() {
 		-name "$svcname" -type l -exec basename {} \; | grep .
 }
 
+is_extra_started_command() {
+	local svcname="$1"
+	local cmd="$2"
+	(
+		set +eu
+		. /etc/init.d/$svcname >/dev/null
+		printf '%s\n' ${extra_started_commands:-}
+	) | grep -qFx "$cmd"
+}
+
 rc_service() {
 	local svcname="${1%%:*}"
 	local cmd="${1#*:}"
 
-	# If the <cmd> cannot be executed, e.g. it's "reload" and the service
-	# is not running...
-	if ! rc-service --dry-run --quiet "$svcname" "$cmd" >/dev/null; then
-		rc-service "$svcname" restart
+	# If the <cmd> can be executed only when the service is started and it's
+	# not, (re)start it before executing the <cmd>.
+	# NOTE: --dry-run doesn't work for extra commands.
+	if is_extra_started_command "$svcname" "$cmd"; then
+		rc-service --ifnotstarted "$svcname" restart
 
 		case "$cmd" in
 			# Don't restart it again, nor reload...
