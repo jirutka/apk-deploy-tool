@@ -155,13 +155,14 @@ rc_service() {
 	# If the <cmd> can be executed only when the service is started and it's
 	# not, (re)start it before executing the <cmd>.
 	# NOTE: --dry-run doesn't work for extra commands.
-	if is_extra_started_command "$svcname" "$cmd"; then
-		rc-service --ifnotstarted "$svcname" restart
+	if [ "$cmd" != 'restart' ] \
+		&& ! rc-service -q "$svcname" status \
+		&& is_extra_started_command "$svcname" "$cmd";
+	then
+		rc-service "$svcname" restart || return 1
 
-		case "$cmd" in
-			# Don't restart it again, nor reload...
-			restart | reload) return;;
-		esac
+		# Don't reload after restart
+		[ "$cmd" = 'reload' ] && return 0
 	fi
 
 	rc-service "$svcname" "$cmd"
