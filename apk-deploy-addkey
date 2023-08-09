@@ -1,5 +1,5 @@
 #!/bin/sh
-# vim: set ts=4 ft=sh:
+# vim: set ts=4 sw=4 ft=sh:
 #---help---
 # Usage: apk-deploy-addkey [options] <name>
 #
