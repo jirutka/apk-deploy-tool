@@ -19,7 +19,7 @@
 #
 # Homepage: <https://github.com/jirutka/apk-deploy-tool>
 #---help---
-set -eu -o pipefail
+set -eu
 
 readonly PROGNAME='apk-deploy-addkey'
 readonly VERSION='0.5.3'
@@ -29,6 +29,13 @@ readonly DEPLOY_USER=${APK_DEPLOY_USER:-"deploy"}
 readonly DEPLOY_GROUP=$(id -gn "$DEPLOY_USER")
 readonly DEPLOY_HOME=$(getent passwd "$DEPLOY_USER" | cut -d: -f6)
 readonly AUTHORIZED_KEYS="$DEPLOY_HOME/.ssh/authorized_keys"
+
+if ( set -o pipefail 2>/dev/null ); then
+	set -o pipefail
+else
+	echo "$PROGNAME: your /bin/sh does not support option pipefail!" >&2
+	exit 1
+fi
 
 
 die() {

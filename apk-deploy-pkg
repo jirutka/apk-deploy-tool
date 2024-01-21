@@ -38,7 +38,7 @@
 #
 # Homepage: <https://github.com/jirutka/apk-deploy-tool>
 #---help---
-set -eu -o pipefail
+set -eu
 set -f  # disable globbing
 
 if [ $(id -u) -ne 0 ]; then
@@ -51,6 +51,13 @@ fi
 
 readonly PROGNAME='apk-deploy-pkg'
 readonly VERSION='0.5.3'
+
+if ( set -o pipefail 2>/dev/null ); then
+	set -o pipefail
+else
+	echo "$PROGNAME: your /bin/sh does not support option pipefail!" >&2
+	exit 1
+fi
 
 readonly DEPLOY_HOME=$(getent passwd "${DOAS_USER:-$SUDO_USER}" | cut -d: -f6)
 readonly PKGS_DIR="${DEPLOY_HOME:?}/packages"
