@@ -212,6 +212,8 @@ pkgfile="$PKGS_DIR/$pkgname~$(date +%s).apk"
 
 mv "$tmpdir/pkg.apk" "$pkgfile"
 
+apk update --update-cache || die 3 'apk update failed!'
+
 log info "Checking $pkgname-$pkgver dependencies..."
 apk add --simulate --quiet "$pkgfile" || die 3 'Dry-run installation failed!'
 
