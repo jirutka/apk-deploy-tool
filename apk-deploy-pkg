@@ -199,7 +199,12 @@ fi
 
 tmpdir=$(mktemp -d)
 pkgfile="$tmpdir/pkg.apk"
-trap "rm -Rf '$tmpdir'" EXIT HUP INT TERM
+
+cleanup() {
+	[ -d "$tmpdir" ] && rm -rf "$tmpdir"
+}
+trap 'cleanup; exit 0' EXIT
+trap 'cleanup; exit 130' HUP INT TERM
 
 echo 'Reading apk package from stdin...'
 cat > "$pkgfile"
